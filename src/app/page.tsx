@@ -1,65 +1,244 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { createClient } from '@/lib/supabase/client'
+import { generateSessionCode, isValidSessionCode } from '@/lib/generate-code'
+import { getRandomColor } from '@/lib/colors'
+import { Utensils, Plus, Users, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+
+export default function HomePage() {
+  const router = useRouter()
+  const [creatorName, setCreatorName] = useState('')
+  const [sessionName, setSessionName] = useState('')
+  const [joinCode, setJoinCode] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
+  const [isJoining, setIsJoining] = useState(false)
+  
+  const supabase = createClient()
+
+  const handleCreateSession = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!creatorName.trim()) {
+      toast.error('Por favor ingresa tu nombre')
+      return
+    }
+
+    setIsCreating(true)
+    try {
+      const code = generateSessionCode()
+      
+      // Crear sesión
+      const { data: session, error: sessionError } = await supabase
+        .from('sessions')
+        .insert({
+          short_code: code,
+          name: sessionName.trim() || 'Mi Cena',
+        })
+        .select()
+        .single()
+
+      if (sessionError) throw sessionError
+
+      // Crear participante (creador)
+      const { data: participant, error: participantError } = await supabase
+        .from('participants')
+        .insert({
+          session_id: session.id,
+          name: creatorName.trim(),
+          color: getRandomColor(),
+          is_owner: true,
+        })
+        .select()
+        .single()
+
+      if (participantError) throw participantError
+
+      // Guardar ID del participante en localStorage
+      localStorage.setItem(`participant_${code}`, participant.id)
+
+      toast.success('¡Cena creada!')
+      router.push(`/s/${code}`)
+    } catch (error) {
+      console.error('Error creating session:', error)
+      toast.error('Error al crear la cena. Intenta de nuevo.')
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  const handleJoinSession = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const code = joinCode.trim().toUpperCase()
+    
+    if (!isValidSessionCode(code)) {
+      toast.error('Código inválido. Debe tener 6 caracteres.')
+      return
+    }
+
+    setIsJoining(true)
+    try {
+      // Verificar que la sesión existe
+      const { data: session, error } = await supabase
+        .from('sessions')
+        .select('id, status')
+        .eq('short_code', code)
+        .single()
+
+      if (error || !session) {
+        toast.error('No se encontró la cena. Verifica el código.')
+        return
+      }
+
+      if (session.status !== 'active') {
+        toast.error('Esta cena ya no está activa.')
+        return
+      }
+
+      // Verificar si ya es participante
+      const existingParticipantId = localStorage.getItem(`participant_${code}`)
+      if (existingParticipantId) {
+        router.push(`/s/${code}`)
+        return
+      }
+
+      // Redirigir a página de unirse
+      router.push(`/s/${code}/join`)
+    } catch (error) {
+      console.error('Error joining session:', error)
+      toast.error('Error al buscar la cena. Intenta de nuevo.')
+    } finally {
+      setIsJoining(false)
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+            <Utensils className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-3xl font-bold">Dividir Cena</h1>
+          <p className="text-muted-foreground">
+            Divide la cuenta del restaurante de forma fácil y justa
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Crear nueva cena */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Crear nueva cena
+            </CardTitle>
+            <CardDescription>
+              Inicia una sesión y comparte el enlace con tus amigos
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleCreateSession} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="creatorName">Tu nombre</Label>
+                <Input
+                  id="creatorName"
+                  placeholder="Ej: Juan"
+                  value={creatorName}
+                  onChange={(e) => setCreatorName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sessionName">Nombre de la cena (opcional)</Label>
+                <Input
+                  id="sessionName"
+                  placeholder="Ej: Cumpleaños de María"
+                  value={sessionName}
+                  onChange={(e) => setSessionName(e.target.value)}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isCreating}>
+                {isCreating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creando...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Crear cena
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="w-full" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-background px-2 text-xs text-muted-foreground uppercase">
+              o
+            </span>
+          </div>
         </div>
-      </main>
-    </div>
-  );
+
+        {/* Unirse a cena existente */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Unirse a una cena
+            </CardTitle>
+            <CardDescription>
+              Ingresa el código que te compartieron
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleJoinSession} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="joinCode">Código de la cena</Label>
+                <Input
+                  id="joinCode"
+                  placeholder="Ej: ABC123"
+                  value={joinCode}
+                  onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                  maxLength={6}
+                  className="text-center text-lg font-mono tracking-widest uppercase"
+                  required
+                />
+              </div>
+              <Button type="submit" variant="outline" className="w-full" disabled={isJoining}>
+                {isJoining ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Buscando...
+                  </>
+                ) : (
+                  <>
+                    <Users className="h-4 w-4 mr-2" />
+                    Unirse
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-muted-foreground">
+          🇨🇴 Optimizado para pesos colombianos
+        </p>
+      </div>
+    </main>
+  )
 }
