@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { createClient } from '@supabase/supabase-js'
-import { SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 import { getRandomColor } from '@/lib/colors'
 import { Users, Loader2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
@@ -23,10 +22,7 @@ export default function JoinSessionPage() {
   const [isJoining, setIsJoining] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   
-  const supabase = new SupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createClient()
 
   useEffect(() => {
     const checkSession = async () => {

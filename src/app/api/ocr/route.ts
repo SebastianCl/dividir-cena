@@ -28,8 +28,6 @@ async function processReceiptWithOCR(imageBuffer: ArrayBuffer): Promise<Detected
   return mockItems
 }
 
-// Implementación real con AWS Textract (comentada para MVP)
-/*
 import { TextractClient, AnalyzeExpenseCommand } from '@aws-sdk/client-textract'
 
 async function processWithTextract(imageBuffer: ArrayBuffer): Promise<DetectedItem[]> {
@@ -84,7 +82,7 @@ async function processWithTextract(imageBuffer: ArrayBuffer): Promise<DetectedIt
 
   return items
 }
-*/
+
 
 export async function POST(request: NextRequest) {
   try {
@@ -110,7 +108,7 @@ export async function POST(request: NextRequest) {
     const imageBuffer = await imageFile.arrayBuffer()
 
     // Procesar con OCR
-    const detectedItems = await processReceiptWithOCR(imageBuffer)
+    const detectedItems = await processWithTextract(imageBuffer)
 
     // Guardar items en la base de datos
     const supabase = await createClient()

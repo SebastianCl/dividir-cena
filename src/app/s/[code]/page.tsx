@@ -5,8 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { createClient } from '@supabase/supabase-js'
-import { SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 
 import { useSessionStore } from '@/store/session-store'
 import { useRealtime } from '@/hooks/useRealtime'
@@ -44,10 +43,7 @@ export default function SessionPage() {
   const [copied, setCopied] = useState(false)
   
   const { session, setCurrentParticipant, addItem } = useSessionStore()
-  const supabase = new SupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createClient()
   
   // Activar realtime
   useRealtime(sessionId)
@@ -169,7 +165,7 @@ export default function SessionPage() {
         // Actualizar sesión con URL de imagen
         await supabase
           .from('sessions')
-          .update({ receipt_image_url: publicUrl } as any)
+          .update({ receipt_image_url: publicUrl })
           .eq('id', sessionId)
       }
 

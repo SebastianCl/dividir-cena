@@ -2,8 +2,7 @@
 'use client'
 
 import { useSessionStore } from '@/store/session-store'
-import { createClient } from '@supabase/supabase-js'
-import { SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 import { ItemCard } from './ItemCard'
 import { AddItemForm } from './AddItemForm'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -17,10 +16,7 @@ interface ItemListProps {
 
 export function ItemList({ sessionId, isOwner = false }: ItemListProps) {
   const { items, assignments, participants, updateItem, removeItem, addItem, addAssignment, removeAssignment } = useSessionStore()
-  const supabase = new SupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createClient()
 
   const handleEdit = async (id: string, updates: Partial<Item>) => {
     updateItem(id, updates)

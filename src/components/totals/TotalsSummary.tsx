@@ -10,8 +10,7 @@ import { ParticipantAvatar } from '@/components/participants/ParticipantAvatar'
 
 import { useSessionStore } from '@/store/session-store'
 import { formatCOP, calculateTotalWithExtras } from '@/lib/currency'
-import { createClient } from '@supabase/supabase-js'
-import { SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 import { Copy, Check, Receipt } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Session } from '@/types/database'
@@ -21,10 +20,7 @@ export function TotalsSummary() {
   const [tipPercentage, setTipPercentage] = useState(session?.tip_percentage || 0)
   const [taxAmount, setTaxAmount] = useState(session?.tax_amount || 0)
   const [copied, setCopied] = useState(false)
-  const supabase = new SupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createClient()
 
   const subtotal = items.reduce((sum, item) => sum + item.total_price, 0)
   const { tip, total } = calculateTotalWithExtras(subtotal, tipPercentage, taxAmount)
