@@ -22,7 +22,8 @@ export function ItemList({ sessionId, isOwner = false }: ItemListProps) {
     updateItem(id, updates)
     await supabase
       .from('items')
-      .update(updates as any)
+      // @ts-expect-error - Supabase types inference issue
+      .update(updates)
       .eq('id', id)
   }
 
@@ -65,7 +66,8 @@ export function ItemList({ sessionId, isOwner = false }: ItemListProps) {
           updateAssignment(assignment.id, { share_fraction: newShareFraction })
           await supabase
             .from('assignments')
-            .update({ share_fraction: newShareFraction } as any)
+            // @ts-expect-error - Supabase types inference issue
+            .update({ share_fraction: newShareFraction })
             .eq('id', assignment.id)
         }
       }
@@ -80,7 +82,8 @@ export function ItemList({ sessionId, isOwner = false }: ItemListProps) {
         updateAssignment(assignment.id, { share_fraction: shareFraction })
         await supabase
           .from('assignments')
-          .update({ share_fraction: shareFraction } as any)
+          // @ts-expect-error - Supabase types inference issue
+          .update({ share_fraction: shareFraction })
           .eq('id', assignment.id)
       }
       
@@ -106,7 +109,8 @@ export function ItemList({ sessionId, isOwner = false }: ItemListProps) {
       : itemAssignments.length >= 1
     await supabase
       .from('items')
-      .update({ is_shared: willBeShared } as any)
+      // @ts-expect-error - Supabase types inference issue
+      .update({ is_shared: willBeShared })
       .eq('id', itemId)
   }
 

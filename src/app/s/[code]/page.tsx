@@ -165,6 +165,7 @@ export default function SessionPage() {
         // Actualizar sesión con URL de imagen
         await supabase
           .from('sessions')
+          // @ts-expect-error - Supabase types inference issue
           .update({ receipt_image_url: publicUrl })
           .eq('id', sessionId)
       }

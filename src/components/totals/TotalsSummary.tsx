@@ -42,7 +42,8 @@ export function TotalsSummary() {
     if (session) {
       await supabase
         .from('sessions')
-        .update({ tip_percentage: value } as any)
+        // @ts-expect-error - Supabase types inference issue
+        .update({ tip_percentage: value })
         .eq('id', session.id)
     }
   }
@@ -52,7 +53,8 @@ export function TotalsSummary() {
     if (session) {
       await supabase
         .from('sessions')
-        .update({ tax_amount: value } as any)
+        // @ts-expect-error - Supabase types inference issue
+        .update({ tax_amount: value })
         .eq('id', session.id)
     }
   }
