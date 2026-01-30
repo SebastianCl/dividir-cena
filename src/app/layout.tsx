@@ -47,7 +47,7 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
-          <ThemeToggle className="fixed bottom-4 right-4 z-50" />
+          <ThemeToggle className="fixed bottom-4 left-4 z-50" />
           <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>
