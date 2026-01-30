@@ -39,7 +39,7 @@ export default function HomePage() {
         .from('sessions')
         .insert({
           short_code: code,
-          name: sessionName.trim() || 'Mi Cuenta',
+          name: sessionName.trim() || 'Mi cuenta',
         } as any)
         .select()
         .single()
