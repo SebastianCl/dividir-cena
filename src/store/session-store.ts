@@ -63,6 +63,7 @@ export const useSessionStore = create<SessionState>()(
       removeParticipant: (id) =>
         set((state) => ({
           participants: state.participants.filter((p) => p.id !== id),
+          assignments: state.assignments.filter((a) => a.participant_id !== id),
         })),
       
       setItems: (items) => set({ items }),

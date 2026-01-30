@@ -7,7 +7,7 @@ import { ItemCard } from './ItemCard'
 import { AddItemForm } from './AddItemForm'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ShoppingCart } from 'lucide-react'
-import type { Item, Assignment } from '@/types/database'
+import type { Item } from '@/types/database'
 
 interface ItemListProps {
   sessionId: string
@@ -15,7 +15,7 @@ interface ItemListProps {
 }
 
 export function ItemList({ sessionId, isOwner = false }: ItemListProps) {
-  const { items, assignments, participants, updateItem, removeItem, addItem, addAssignment, updateAssignment, removeAssignment } = useSessionStore()
+  const { items, assignments, participants, updateItem, removeItem, updateAssignment, removeAssignment } = useSessionStore()
   const supabase = createClient()
 
   const handleEdit = async (id: string, updates: Partial<Item>) => {
@@ -55,7 +55,7 @@ export function ItemList({ sessionId, isOwner = false }: ItemListProps) {
     if (existingAssignment) {
       removeAssignment(existingAssignment.id)
       await supabase.from('assignments').delete().eq('id', existingAssignment.id)
-      
+
       // Actualizar share_fraction de las asignaciones restantes
       const remainingAssignments = assignments.filter(
         (a) => a.item_id === itemId && a.id !== existingAssignment.id
@@ -76,7 +76,7 @@ export function ItemList({ sessionId, isOwner = false }: ItemListProps) {
       const currentAssignments = assignments.filter((a) => a.item_id === itemId)
       const totalAssignments = currentAssignments.length + 1
       const shareFraction = 1.0 / totalAssignments
-      
+
       // Actualizar share_fraction de las asignaciones existentes
       for (const assignment of currentAssignments) {
         updateAssignment(assignment.id, { share_fraction: shareFraction })
@@ -86,26 +86,24 @@ export function ItemList({ sessionId, isOwner = false }: ItemListProps) {
           .update({ share_fraction: shareFraction })
           .eq('id', assignment.id)
       }
-      
+
       // Crear la nueva asignación
+      // Nota: No agregamos manualmente al store aquí porque el sistema Realtime
+      // detectará el INSERT y llamará a addAssignment automáticamente.
+      // Esto evita duplicación de asignaciones.
       const newAssignment: import('@/types/database').Database['public']['Tables']['assignments']['Insert'] = {
         item_id: itemId,
         participant_id: participantId,
         share_fraction: shareFraction,
       }
-      const { data } = await supabase
+      await supabase
         .from('assignments')
         .insert(newAssignment as any)
-        .select()
-        .single()
-      if (data) {
-        addAssignment(data as Assignment)
-      }
     }
-    
+
     const itemAssignments = assignments.filter((a) => a.item_id === itemId)
-    const willBeShared = existingAssignment 
-      ? itemAssignments.length > 2 
+    const willBeShared = existingAssignment
+      ? itemAssignments.length > 2
       : itemAssignments.length >= 1
     await supabase
       .from('items')
