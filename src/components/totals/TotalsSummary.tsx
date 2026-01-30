@@ -88,7 +88,7 @@ export function TotalsSummary() {
   }
 
   const generateSummary = () => {
-    let summary = `🍽️ *Resumen de la Cena*\n`
+    let summary = `🍽️ *Resumen*\n`
     summary += `━━━━━━━━━━━━━━━━━━\n\n`
     
     participants.forEach((p) => {

@@ -16,13 +16,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dividir Cena - Divide la cuenta fácilmente",
+  title: "Dividir cuenta - Divide la cuenta fácilmente",
   description: "Aplicación colaborativa para dividir la cuenta del restaurante entre amigos de forma justa y en tiempo real.",
   keywords: ["dividir cuenta", "restaurante", "factura", "amigos", "compartir gastos"],
-  authors: [{ name: "Dividir Cena" }],
+  authors: [{ name: "Dividir cuenta" }],
   openGraph: {
-    title: "Dividir Cena",
-    description: "Divide la cuenta del restaurante de forma fácil y justa",
+    title: "Dividir cuenta",
+    description: "Divide la cuenta de forma fácil y justa",
     type: "website",
   },
 };
