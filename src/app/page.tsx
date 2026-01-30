@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import { createClient } from '@/lib/supabase/client'
 import { generateSessionCode, isValidSessionCode } from '@/lib/generate-code'
 import { getRandomColor } from '@/lib/colors'
-import { Utensils, Plus, Users, Loader2 } from 'lucide-react'
+import { Receipt, Plus, Users, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function HomePage() {
@@ -20,7 +20,7 @@ export default function HomePage() {
   const [joinCode, setJoinCode] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   const [isJoining, setIsJoining] = useState(false)
-  
+
   const supabase = createClient()
 
   const handleCreateSession = async (e: React.FormEvent) => {
@@ -33,7 +33,7 @@ export default function HomePage() {
     setIsCreating(true)
     try {
       const code = generateSessionCode()
-      
+
       // Crear sesión
       const { data: session, error: sessionError } = await supabase
         .from('sessions')
@@ -76,7 +76,7 @@ export default function HomePage() {
   const handleJoinSession = async (e: React.FormEvent) => {
     e.preventDefault()
     const code = joinCode.trim().toUpperCase()
-    
+
     if (!isValidSessionCode(code)) {
       toast.error('Código inválido. Debe tener 6 caracteres.')
       return
@@ -124,7 +124,7 @@ export default function HomePage() {
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <Utensils className="h-8 w-8 text-primary" />
+            <Receipt className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-3xl font-bold">DIVIDIR CUENTA</h1>
           <p className="text-muted-foreground">
