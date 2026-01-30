@@ -142,7 +142,7 @@ export function useRealtime(sessionId: string | null) {
               // Verificar si el usuario eliminado es el actual
               const currentParticipant = useSessionStore.getState().currentParticipant
               if (currentParticipant?.id === deletedId) {
-                toast.error('Has sido eliminado de la cena')
+                toast.error('Has sido eliminado de la cuenta')
                 useSessionStore.getState().reset()
                 router.push('/')
               }

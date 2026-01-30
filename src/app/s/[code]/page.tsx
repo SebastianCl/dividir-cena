@@ -244,7 +244,7 @@ export default function SessionPage() {
               <FinalizeSessionDialog
                 sessionId={sessionId}
                 sessionCode={code}
-                sessionName={session?.name || 'Mi Cena'}
+                sessionName={session?.name || 'Mi cuenta'}
                 participantId={currentParticipant.id}
               />
             )}

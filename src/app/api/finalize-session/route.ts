@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import type { Database } from '@/types/database'
-
-type SessionUpdate = Database['public']['Tables']['sessions']['Update']
 
 interface ParticipantData {
   id: string
@@ -71,26 +68,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Primero cambiar el estado a 'closed' para notificar a otros usuarios via realtime
-    const updateData: SessionUpdate = { status: 'closed' }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: updateError } = await (supabase as any)
-      .from('sessions')
-      .update(updateData)
-      .eq('id', sessionId)
-
-    if (updateError) {
-      console.error('Error al cerrar sesión:', updateError)
-      return NextResponse.json(
-        { error: 'Error al cerrar la sesión' },
-        { status: 500 }
-      )
-    }
-
-    // Esperar un momento para que el cambio de estado se propague via realtime
-    await new Promise(resolve => setTimeout(resolve, 500))
-
-    // Eliminar la sesión (CASCADE eliminará todos los datos relacionados)
+    // Eliminar la sesión directamente (CASCADE eliminará todos los datos relacionados)
+    // Los usuarios serán notificados via el evento DELETE de realtime
     const { error: deleteError } = await supabase
       .from('sessions')
       .delete()
@@ -98,10 +77,9 @@ export async function POST(request: NextRequest) {
 
     if (deleteError) {
       console.error('Error al eliminar sesión:', deleteError)
-      // Aunque falle la eliminación, la sesión ya está cerrada
       return NextResponse.json(
-        { success: true, message: 'Sesión cerrada (pendiente de eliminar)' },
-        { status: 200 }
+        { error: 'Error al eliminar la sesión' },
+        { status: 500 }
       )
     }
 
