@@ -1,12 +1,15 @@
 'use client'
 
 import { useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useSessionStore } from '@/store/session-store'
+import { toast } from 'sonner'
 import type { Item, Participant, Assignment, Session } from '@/types/database'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export function useRealtime(sessionId: string | null) {
+  const router = useRouter()
   const {
     setSession,
     setParticipants,
@@ -117,7 +120,16 @@ export function useRealtime(sessionId: string | null) {
               addParticipant(payload.new as Participant)
               break
             case 'DELETE':
-              removeParticipant((payload.old as Participant).id)
+              const deletedId = (payload.old as Participant).id
+              removeParticipant(deletedId)
+              
+              // Verificar si el usuario eliminado es el actual
+              const currentParticipant = useSessionStore.getState().currentParticipant
+              if (currentParticipant?.id === deletedId) {
+                toast.error('Has sido eliminado de la cena')
+                useSessionStore.getState().reset()
+                router.push('/')
+              }
               break
           }
         }
